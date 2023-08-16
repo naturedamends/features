@@ -7,7 +7,7 @@
 # Docs: https://github.com/devcontainers/features/tree/main/src/common-utils
 # Maintainer: The Dev Container spec maintainers
 
-set -e
+set -ex
 
 INSTALL_ZSH="${INSTALLZSH:-"true"}"
 CONFIGURE_ZSH_AS_DEFAULT_SHELL="${CONFIGUREZSHASDEFAULTSHELL:-"false"}"
@@ -467,9 +467,6 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
     fi
 
     if [ "${INSTALL_OH_MY_ZSH}" = "true" ]; then
-        copy_to_user_files=()
-        copy_to_user_files+=("${oh_my_install_dir}")
-    
         if [ ! -d "${oh_my_install_dir}" ]; then
             mkdir -p ${oh_my_install_dir}
             # Adapted, simplified inline Oh My Zsh! install steps that adds, defaults to a codespaces theme.
@@ -487,10 +484,10 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
         fi
 
         # Add dev containers theme
-        mkdir -p ${oh_my_install_dir}/custom/themes
         themes_dir="${oh_my_install_dir}/custom/themes"
         dc_theme_path="${themes_dir}/devcontainers.zsh-theme"
         codespaces_theme_path="${themes_dir}/codespaces.zsh-theme"
+        mkdir -p "${themes_dir}"
         cp -f "${FEATURE_DIR}/scripts/devcontainers.zsh-theme" "$dc_theme_path"
         cp -f "$dc_theme_path" "${codespaces_theme_path}"
 
@@ -498,8 +495,15 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
         if [ "$INSTALL_OH_MY_ZSH_CONFIG" = "true" ]; then
             echo -e "$(cat "${template_path}")\nDISABLE_AUTO_UPDATE=true\nDISABLE_UPDATE_PROMPT=true" > ${user_rc_file}
             sed -i -e 's/ZSH_THEME=.*/ZSH_THEME="devcontainers"/g' ${user_rc_file}
-            copy_to_user_files+=("$user_rc_file")
             OH_MY_ZSH_CONFIG_INSTALLED="true"
+        fi
+
+        # Prepare build file paths
+        copy_to_user_files=("${oh_my_install_dir}")
+        root_file_paths=("/root/.oh-my-zsh")
+        if [ "$INSTALL_OH_MY_ZSH_CONFIG" = "true" ]; then
+            root_file_paths+=("/root/.zshrc")
+            copy_to_user_files+=("$user_rc_file")
         fi
 
         # Set zsh file permissions for current user
@@ -508,7 +512,6 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
         # Copy to alternate user if one is specified
         if [ "${USERNAME}" != "root" ]; then
             cp -rf "${copy_to_user_files[@]}" /root
-            root_files=("/root/.oh-my-zsh")
             [ "$INSTALL_OH_MY_ZSH_CONFIG" = "true" ] && root_files+=("/root/.zshrc")
             chown -R root:root "${root_files[@]}"
         fi
