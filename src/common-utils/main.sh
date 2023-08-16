@@ -7,7 +7,7 @@
 # Docs: https://github.com/devcontainers/features/tree/main/src/common-utils
 # Maintainer: The Dev Container spec maintainers
 
-set -e
+set -ex
 
 INSTALL_ZSH="${INSTALLZSH:-"true"}"
 CONFIGURE_ZSH_AS_DEFAULT_SHELL="${CONFIGUREZSHASDEFAULTSHELL:-"false"}"
@@ -426,10 +426,6 @@ if [ "${RC_SNIPPET_ALREADY_ADDED}" != "true" ]; then
     RC_SNIPPET_ALREADY_ADDED="true"
 fi
 
-echo "USERNAME: $USERNAME"
-ls -la ~
-ls -la "${user_home}"
-
 # Optionally configure zsh and Oh My Zsh!
 user_rc_file="${user_home}/.zshrc"
 oh_my_install_dir="${user_home}/.oh-my-zsh"
@@ -438,13 +434,16 @@ template_path="${oh_my_install_dir}/templates/zshrc.zsh-template"
 # Given previous step configured ~/.zshrc then remove it,
 # where installOhMyZshConfig is false.
 # Allow upstream steps to use installOhMyZshConfig false
-if [ "$MARKED_INSTALL_OH_MY_ZSH_CONFIG" = "true" ] && [ "$INSTALL_OH_MY_ZSH_CONFIG" = "false" ]; then
+if [ "$OH_MY_ZSH_CONFIG_INSTALLED" = "true" ] && [ "$INSTALL_OH_MY_ZSH_CONFIG" = "false" ]; then
     if [ -f "${user_rc_file}" ]; then
         rm "${user_rc_file}"
+        OH_MY_ZSH_CONFIG_INSTALLED="false"
     fi
 fi
 
 if [ "${INSTALL_ZSH}" = "true" ]; then
+    umask g-w,o-w
+
     if [ "${ZSH_ALREADY_INSTALLED}" != "true" ]; then
         if [ "${ADJUSTED_ID}" = "rhel" ]; then
              global_rc_path="/etc/zshrc"
@@ -467,12 +466,14 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
         chsh --shell /bin/zsh ${USERNAME}
     fi
 
-    # Adapted, simplified inline Oh My Zsh! install steps that adds, defaults to a codespaces theme.
-    # See https://github.com/ohmyzsh/ohmyzsh/blob/master/tools/install.sh for official script.
     if [ "${INSTALL_OH_MY_ZSH}" = "true" ]; then
+        copy_to_user_files=()
+        copy_to_user_files+=("${oh_my_install_dir}")
+    
         if [ ! -d "${oh_my_install_dir}" ]; then
-            umask g-w,o-w
             mkdir -p ${oh_my_install_dir}
+            # Adapted, simplified inline Oh My Zsh! install steps that adds, defaults to a codespaces theme.
+            # See https://github.com/ohmyzsh/ohmyzsh/blob/master/tools/install.sh for official script.
             git clone --depth=1 \
                 -c core.eol=lf \
                 -c core.autocrlf=false \
@@ -488,21 +489,25 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
         # Add Dev Containers theme
         mkdir -p ${oh_my_install_dir}/custom/themes
         cp -f "${FEATURE_DIR}/scripts/devcontainers.zsh-theme" "${oh_my_install_dir}/custom/themes/devcontainers.zsh-theme"
-        ln -sf "${oh_my_install_dir}/custom/themes/devcontainers.zsh-theme" "${oh_my_install_dir}/custom/themes/codespaces.zsh-theme"
+        cp -f "${oh_my_install_dir}/custom/themes/devcontainers.zsh-theme" "${oh_my_install_dir}/custom/themes/codespaces.zsh-theme"
 
         # Add devcontainer .zshrc template
         if [ "$INSTALL_OH_MY_ZSH_CONFIG" = "true" ]; then
             echo -e "$(cat "${template_path}")\nDISABLE_AUTO_UPDATE=true\nDISABLE_UPDATE_PROMPT=true" > ${user_rc_file}
             sed -i -e 's/ZSH_THEME=.*/ZSH_THEME="devcontainers"/g' ${user_rc_file}
-            MARKED_INSTALL_OH_MY_ZSH_CONFIG="true"
+            copy_to_user_files+=("$user_rc_file")
+            OH_MY_ZSH_CONFIG_INSTALLED="true"
         fi
+
+        # Set zsh file permissions for current user
+        chown -R ${USERNAME}:${group_name} "${copy_to_user_files[@]}"
 
         # Copy to alternate user if one is specified
         if [ "${USERNAME}" != "root" ]; then
-            copy_to_user_files=("${oh_my_install_dir}")
-            [ -f "$user_rc_file" ] && copy_to_user_files+=("$user_rc_file")
             cp -rf "${copy_to_user_files[@]}" /root
-            chown -R ${USERNAME}:${group_name} "${oh_my_install_dir}" "${user_rc_file}"
+            root_files=("/root/.oh-my-zsh")
+            [ "$INSTALL_OH_MY_ZSH_CONFIG" = "true" ] && root_files+=("/root/.zshrc")
+            chown -R root:root "${root_files[@]}"
         fi
     fi
 fi
@@ -546,6 +551,6 @@ echo -e "\
     EXISTING_NON_ROOT_USER=${EXISTING_NON_ROOT_USER}\n\
     RC_SNIPPET_ALREADY_ADDED=${RC_SNIPPET_ALREADY_ADDED}\n\
     ZSH_ALREADY_INSTALLED=${ZSH_ALREADY_INSTALLED}\n\
-    MARKED_INSTALL_OH_MY_ZSH_CONFIG=${MARKED_INSTALL_OH_MY_ZSH_CONFIG}" > "${MARKER_FILE}"
+    OH_MY_ZSH_CONFIG_INSTALLED=${OH_MY_ZSH_CONFIG_INSTALLED}" > "${MARKER_FILE}"
 
 echo "Done!"
