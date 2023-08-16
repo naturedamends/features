@@ -513,7 +513,7 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
         # Copy to alternate user if one is specified
         if [ "${USERNAME}" != "root" ]; then
             cp -rf "${copy_to_user_files[@]}" /root
-            chown -R root:root "${root_files[@]}"
+            chown -R root:root "${root_file_paths[@]}"
         fi
     fi
 fi
