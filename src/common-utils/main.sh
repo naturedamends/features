@@ -7,7 +7,7 @@
 # Docs: https://github.com/devcontainers/features/tree/main/src/common-utils
 # Maintainer: The Dev Container spec maintainers
 
-set -ex
+set -e
 
 INSTALL_ZSH="${INSTALLZSH:-"true"}"
 CONFIGURE_ZSH_AS_DEFAULT_SHELL="${CONFIGUREZSHASDEFAULTSHELL:-"false"}"
