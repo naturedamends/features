@@ -513,7 +513,6 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
         # Copy to alternate user if one is specified
         if [ "${USERNAME}" != "root" ]; then
             cp -rf "${copy_to_user_files[@]}" /root
-            [ "$INSTALL_OH_MY_ZSH_CONFIG" = "true" ] && root_files+=("/root/.zshrc")
             chown -R root:root "${root_files[@]}"
         fi
     fi
