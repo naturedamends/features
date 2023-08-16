@@ -481,15 +481,18 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
                 -c fetch.fsck.zeroPaddedFilemode=ignore \
                 -c receive.fsck.zeroPaddedFilemode=ignore \
                 "https://github.com/ohmyzsh/ohmyzsh" "${oh_my_install_dir}" 2>&1
-
             # Shrink git while still enabling updates
-            GIT_WORK_TREE="${oh_my_install_dir}" GIT_DIR="${oh_my_install_dir}/.git" git repack -a -d -f --depth=1 --window=1
+            GIT_WORK_TREE="${oh_my_install_dir}" GIT_DIR="${oh_my_install_dir}/.git" git repack\
+                -a -d -f --depth=1 --window=1
         fi
 
-        # Add Dev Containers theme
+        # Add dev containers theme
         mkdir -p ${oh_my_install_dir}/custom/themes
-        cp -f "${FEATURE_DIR}/scripts/devcontainers.zsh-theme" "${oh_my_install_dir}/custom/themes/devcontainers.zsh-theme"
-        cp -f "${oh_my_install_dir}/custom/themes/devcontainers.zsh-theme" "${oh_my_install_dir}/custom/themes/codespaces.zsh-theme"
+        themes_dir="${oh_my_install_dir}/custom/themes"
+        dc_theme_path="${themes_dir}/devcontainers.zsh-theme"
+        codespaces_theme_path="${themes_dir}/codespaces.zsh-theme"
+        cp -f "${FEATURE_DIR}/scripts/devcontainers.zsh-theme" "$dc_theme_path"
+        cp -f "$dc_theme_path" "${codespaces_theme_path}"
 
         # Add devcontainer .zshrc template
         if [ "$INSTALL_OH_MY_ZSH_CONFIG" = "true" ]; then
