@@ -7,7 +7,7 @@
 # Docs: https://github.com/devcontainers/features/tree/main/src/common-utils
 # Maintainer: The Dev Container spec maintainers
 
-set -ex
+set -e
 
 INSTALL_ZSH="${INSTALLZSH:-"true"}"
 CONFIGURE_ZSH_AS_DEFAULT_SHELL="${CONFIGUREZSHASDEFAULTSHELL:-"false"}"
@@ -484,14 +484,13 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
         fi
 
         # Add dev containers theme
-        themes_dir="${oh_my_install_dir}/custom/themes"
-        devcontainers_theme_target="${themes_dir}/devcontainers.zsh-theme"
-        codespaces_theme_target="${themes_dir}/codespaces.zsh-theme"
+        zsh_theme_dir_target="${oh_my_install_dir}/custom/themes"
+        devcontainers_theme_target="${zsh_theme_dir_target}/devcontainers.zsh-theme"
+        codespaces_theme_target="${zsh_theme_dir_target}/codespaces.zsh-theme"
         theme_template_path="${FEATURE_DIR}/scripts/devcontainers.zsh-theme"
-        mkdir -p "${themes_dir}"
-        cp -f "${theme_template_path}" "$devcontainers_theme_target"
-        ls -la 
-        cp -f "$devcontainers_theme_target" "${codespaces_theme_target}"
+        mkdir -p "${zsh_theme_dir_target}"
+        cp -f "${theme_template_path}" "${devcontainers_theme_target}"
+        cp -f "${theme_template_path}" "${codespaces_theme_target}"
 
         # Add devcontainer .zshrc template
         if [ "$INSTALL_OH_MY_ZSH_CONFIG" = "true" ]; then
