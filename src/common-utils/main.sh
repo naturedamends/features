@@ -485,11 +485,13 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
 
         # Add dev containers theme
         themes_dir="${oh_my_install_dir}/custom/themes"
-        dc_theme_path="${themes_dir}/devcontainers.zsh-theme"
-        codespaces_theme_path="${themes_dir}/codespaces.zsh-theme"
+        devcontainers_theme_target="${themes_dir}/devcontainers.zsh-theme"
+        codespaces_theme_target="${themes_dir}/codespaces.zsh-theme"
+        theme_template_path="${FEATURE_DIR}/scripts/devcontainers.zsh-theme"
         mkdir -p "${themes_dir}"
-        cp -f "${FEATURE_DIR}/scripts/devcontainers.zsh-theme" "$dc_theme_path"
-        cp -f "$dc_theme_path" "${codespaces_theme_path}"
+        cp -f "${theme_template_path}" "$devcontainers_theme_target"
+        ls -la 
+        cp -f "$devcontainers_theme_target" "${codespaces_theme_target}"
 
         # Add devcontainer .zshrc template
         if [ "$INSTALL_OH_MY_ZSH_CONFIG" = "true" ]; then
