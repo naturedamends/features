@@ -435,7 +435,7 @@ template_path="${user_omz_install_dir}/templates/zshrc.zsh-template"
 
 # Allow upstream steps to use installOhMyZshConfig false
 # Given previous step configured ~/.zshrc,
-# When installOhMyZshConfig is false, done before INSTALL_ZSH since,
+# When installOhMyZshConfig is false, done before INSTALL_ZSH since
 #  Or where installOhMyZshconfig false, and installZsh false
 # Then remove the file
 if [ "$OH_MY_ZSH_CONFIG_INSTALLED" = "true" ] && [ "$INSTALL_OH_MY_ZSH_CONFIG" = "false" ]; then
@@ -506,15 +506,13 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
             omz_source_files=("${omz_source_filename}")
         fi
 
-        # Prepare current user target files
         omz_copy_source_files=( "${omz_source_files[@]/#/$user_home/}" )
 
-        # Copy to alternate user if one is specified
         if [ "${USERNAME}" != "root" ]; then
+            # Copy files to alternate user if one is specified
             cp -rf "${omz_copy_source_files[@]}" /root
-            root_files_paths=( "${omz_source_files[@]/#//root/}" )
-            # Set permissions for root
-            chown -R root:root "${root_file_paths[@]}"
+            # Set permissions for root user
+            chown -R root:root "${omz_source_files[@]/#//root/}"
         fi
 
         # Set permissions for current user
