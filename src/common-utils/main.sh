@@ -428,9 +428,9 @@ fi
 
 # Optionally configure zsh and Oh My Zsh!
 omz_rc_filename=".zshrc"
-omz_source_filename=".oh-my-zsh"
+omz_source_dirname=".oh-my-zsh"
 user_rc_file="${user_home}/${omz_rc_filename}"
-user_omz_install_dir="${user_home}/${omz_source_filename}"
+user_omz_install_dir="${user_home}/${omz_source_dirname}"
 template_path="${user_omz_install_dir}/templates/zshrc.zsh-template"
 
 # Allow upstream steps to use installOhMyZshConfig false
@@ -473,7 +473,7 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
     if [ "${INSTALL_OH_MY_ZSH}" = "true" ]; then
         # Adapted, simplified inline Oh My Zsh! install steps that adds, defaults to a codespaces theme.
         # See https://github.com/ohmyzsh/ohmyzsh/blob/master/tools/install.sh for official script.
-        omz_source_files=("${omz_source_filename}")
+        omz_added_filesnames=("${omz_source_dirname}")
         if [ ! -d "${user_omz_install_dir}" ]; then
             mkdir -p ${user_omz_install_dir}
             git clone --depth=1 \
@@ -489,34 +489,33 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
         fi
 
         # Add dev containers theme
-        zsh_theme_dir_target="${user_omz_install_dir}/custom/themes"
-        devcontainers_theme_target="${zsh_theme_dir_target}/devcontainers.zsh-theme"
-        codespaces_theme_target="${zsh_theme_dir_target}/codespaces.zsh-theme"
+        user_omz_theme_filepath="${user_omz_install_dir}/custom/themes"
+        user_devcontainer_theme_target="${user_omz_theme_filepath}/devcontainers.zsh-theme"
+        user_codespaces_theme_target="${user_omz_theme_filepath}/codespaces.zsh-theme"
         theme_template_path="${FEATURE_DIR}/scripts/devcontainers.zsh-theme"
-        mkdir -p "${zsh_theme_dir_target}"
-        cp -f "${theme_template_path}" "${devcontainers_theme_target}"
-        cp -f "${theme_template_path}" "${codespaces_theme_target}"
-
+        mkdir -p "${user_omz_theme_filepath}"
+        cp -f "${theme_template_path}" "${user_devcontainer_theme_target}"
+        cp -f "${theme_template_path}" "${user_codespaces_theme_target}"
 
         # Add devcontainer .zshrc template
         if [ "$INSTALL_OH_MY_ZSH_CONFIG" = "true" ]; then
             echo -e "$(cat "${template_path}")\nDISABLE_AUTO_UPDATE=true\nDISABLE_UPDATE_PROMPT=true" > ${user_rc_file}
             sed -i -e 's/ZSH_THEME=.*/ZSH_THEME="devcontainers"/g' ${user_rc_file}
             OH_MY_ZSH_CONFIG_INSTALLED="true"
-            omz_source_files=("${omz_source_filename}")
+            omz_added_filesnames=("${omz_source_dirname}")
         fi
 
-        omz_copy_source_files=( "${omz_source_files[@]/#/$user_home/}" )
+        user_omz_filepaths=( "${omz_added_filesnames[@]/#/$user_home/}" )
 
         if [ "${USERNAME}" != "root" ]; then
             # Copy files to alternate user if one is specified
-            cp -rf "${omz_copy_source_files[@]}" /root
+            cp -rf "${user_omz_filepaths[@]}" /root
             # Set permissions for root user
-            chown -R root:root "${omz_source_files[@]/#//root/}"
+            chown -R root:root "${omz_added_filesnames[@]/#//root/}"
         fi
 
         # Set permissions for current user
-        chown -R "${USERNAME}:${group_name}" "${omz_copy_source_files[@]}"
+        chown -R "${USERNAME}:${group_name}" "${user_omz_filepaths[@]}"
     fi
 fi
 
