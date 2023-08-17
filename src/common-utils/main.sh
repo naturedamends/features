@@ -502,7 +502,7 @@ if [ "${INSTALL_ZSH}" = "true" ]; then
             echo -e "$(cat "${template_path}")\nDISABLE_AUTO_UPDATE=true\nDISABLE_UPDATE_PROMPT=true" > ${user_rc_file}
             sed -i -e 's/ZSH_THEME=.*/ZSH_THEME="devcontainers"/g' ${user_rc_file}
             OH_MY_ZSH_CONFIG_INSTALLED="true"
-            omz_added_filesnames=("${omz_source_dirname}")
+            omz_added_filesnames=("${omz_rc_filename}")
         fi
 
         user_omz_filepaths=( "${omz_added_filesnames[@]/#/$user_home/}" )
